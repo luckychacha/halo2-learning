@@ -1,4 +1,9 @@
-use halo2_proofs::{arithmetic::Field, circuit::{AssignedCell, Layouter, SimpleFloorPlanner, Value}, plonk::{Advice, Circuit, Column, ConstraintSystem, Error, Instance, Selector}, poly::Rotation};
+use halo2_proofs::{
+    arithmetic::Field,
+    circuit::{AssignedCell, Layouter, SimpleFloorPlanner, Value},
+    plonk::{Advice, Circuit, Column, ConstraintSystem, Error, Instance, Selector},
+    poly::Rotation,
+};
 use halo2_proofs::{dev::MockProver, pasta::Fp};
 
 #[derive(Debug, Clone)]
@@ -18,31 +23,56 @@ struct MyCircuit<F: Field> {
 #[derive(Clone)]
 struct Number<F: Field>(AssignedCell<F, F>);
 
-fn load_private<F: Field>(config: &CircuitConfig, mut layouter: impl halo2_proofs::circuit::Layouter<F>, value: Value<F>) -> Result<Number<F>, Error> {
-    layouter.assign_region(|| "load private", |mut region| {
-        region.assign_advice(|| "load private", config.advice[0], 0, || value).map(Number)
-    })
+fn load_private<F: Field>(
+    config: &CircuitConfig,
+    mut layouter: impl halo2_proofs::circuit::Layouter<F>,
+    value: Value<F>,
+) -> Result<Number<F>, Error> {
+    layouter.assign_region(
+        || "load private",
+        |mut region| {
+            region
+                .assign_advice(|| "load private", config.advice[0], 0, || value)
+                .map(Number)
+        },
+    )
 }
 
-
-fn load_constant<F: Field>(config: &CircuitConfig, mut layouter: impl halo2_proofs::circuit::Layouter<F>, constant: F) -> Result<Number<F>, Error> {
-    layouter.assign_region(|| "load constant", |mut region| {
-        region.assign_advice_from_constant(|| "load constant", config.advice[0], 0, constant).map(Number)
-    })
+fn load_constant<F: Field>(
+    config: &CircuitConfig,
+    mut layouter: impl halo2_proofs::circuit::Layouter<F>,
+    constant: F,
+) -> Result<Number<F>, Error> {
+    layouter.assign_region(
+        || "load constant",
+        |mut region| {
+            region
+                .assign_advice_from_constant(|| "load constant", config.advice[0], 0, constant)
+                .map(Number)
+        },
+    )
 }
 
-fn mul<F: Field>(config: &CircuitConfig, mut layouter: impl halo2_proofs::circuit::Layouter<F>, a: Number<F>, b: Number<F>) -> Result<Number<F>, Error> {
-    layouter.assign_region(|| "mul", |mut region| {
-        config.selector.enable(&mut region, 0)?;
-        a.0.copy_advice(|| "lhs", &mut region, config.advice[0], 0)?;
-        b.0.copy_advice(|| "lhs", &mut region, config.advice[1], 0)?;
+fn mul<F: Field>(
+    config: &CircuitConfig,
+    mut layouter: impl halo2_proofs::circuit::Layouter<F>,
+    a: Number<F>,
+    b: Number<F>,
+) -> Result<Number<F>, Error> {
+    layouter.assign_region(
+        || "mul",
+        |mut region| {
+            config.selector.enable(&mut region, 0)?;
+            a.0.copy_advice(|| "lhs", &mut region, config.advice[0], 0)?;
+            b.0.copy_advice(|| "lhs", &mut region, config.advice[1], 0)?;
 
-        let value = a.0.value().copied() * b.0.value().copied();
+            let value = a.0.value().copied() * b.0.value().copied();
 
-        region.assign_advice(|| "out = lhs * rhs", config.advice[0], 1, || value).map(Number)
-    })
-
-
+            region
+                .assign_advice(|| "out = lhs * rhs", config.advice[0], 1, || value)
+                .map(Number)
+        },
+    )
 }
 
 impl<F: Field> Circuit<F> for MyCircuit<F> {
@@ -62,7 +92,6 @@ impl<F: Field> Circuit<F> for MyCircuit<F> {
         let selector = meta.selector();
         let constant = meta.fixed_column();
 
-
         meta.enable_equality(instance);
         meta.enable_constant(constant);
 
@@ -78,7 +107,6 @@ impl<F: Field> Circuit<F> for MyCircuit<F> {
             let mul_selector = meta.query_selector(selector);
 
             vec![mul_selector * (lhs * rhs - out)]
-
         });
 
         CircuitConfig {
@@ -88,7 +116,11 @@ impl<F: Field> Circuit<F> for MyCircuit<F> {
         }
     }
 
-    fn synthesize(&self, config: Self::Config, mut layouter: impl halo2_proofs::circuit::Layouter<F>) -> Result<(), halo2_proofs::plonk::Error> {
+    fn synthesize(
+        &self,
+        config: Self::Config,
+        mut layouter: impl halo2_proofs::circuit::Layouter<F>,
+    ) -> Result<(), halo2_proofs::plonk::Error> {
         let a = load_private(&config, layouter.namespace(|| "load a"), self.a)?;
         let b = load_private(&config, layouter.namespace(|| "load b"), self.b)?;
         let c = load_constant(&config, layouter.namespace(|| "load c"), self.c)?;
@@ -98,19 +130,17 @@ impl<F: Field> Circuit<F> for MyCircuit<F> {
         let out = mul(&config, layouter.namespace(|| "absq * c"), absq, c)?;
 
         // expose public
-        layouter.namespace(|| "expose out").constrain_instance(out.0.cell(), config.instance, 0)
-
+        layouter
+            .namespace(|| "expose out")
+            .constrain_instance(out.0.cell(), config.instance, 0)
     }
 }
-
 
 fn main() {
     test_1();
     #[cfg(feature = "dev-graph")]
     plot_1_circuit();
 }
-
-
 
 fn test_1() {
     // ANCHOR: test-circuit
@@ -156,8 +186,7 @@ fn plot_1_circuit() {
     // Create the area you want to draw on.
     // Use SVGBackend if you want to render to .svg instead.
     use plotters::prelude::*;
-    let root =
-        BitMapBackend::new("chap_1_simple.png", (1024, 768)).into_drawing_area();
+    let root = BitMapBackend::new("chap_1_simple.png", (1024, 768)).into_drawing_area();
     root.fill(&WHITE).unwrap();
     let root = root
         .titled("Simple Circuit without chip", ("sans-serif", 60))
