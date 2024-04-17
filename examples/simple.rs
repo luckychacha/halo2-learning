@@ -64,7 +64,7 @@ fn mul<F: Field>(
         |mut region| {
             config.selector.enable(&mut region, 0)?;
             a.0.copy_advice(|| "lhs", &mut region, config.advice[0], 0)?;
-            b.0.copy_advice(|| "lhs", &mut region, config.advice[1], 0)?;
+            b.0.copy_advice(|| "rhs", &mut region, config.advice[1], 0)?;
 
             let value = a.0.value().copied() * b.0.value().copied();
 
