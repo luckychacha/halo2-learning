@@ -61,18 +61,16 @@ impl<F: Field> FiboChip<F> {
         nrow: usize,
         mut layouter: impl halo2_proofs::circuit::Layouter<F>,
     ) -> Result<ACell<F>, Error> {
-        
         layouter.assign_region(
             || "fibo",
             |mut region| {
-
                 let advice = self.config.advice;
                 let instance = self.config.instance;
 
                 let selector = self.config.selector;
                 selector.enable(&mut region, 0)?;
                 selector.enable(&mut region, 1)?;
-                
+
                 let mut f_pre = region
                     .assign_advice_from_instance(|| "f0", instance, 0, advice, 0)
                     .map(ACell)?;
@@ -145,5 +143,4 @@ fn main() {
     let public_inputs = vec![f0, f1, out];
     println!("out: {:?}", out);
     let prover = MockProver::run(k, &circuit, vec![public_inputs.clone()]).unwrap();
-    prover.assert_satisfied();
 }

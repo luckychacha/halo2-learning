@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use halo2_proofs::{
     arithmetic::Field,
-    circuit::{layouter, AssignedCell, SimpleFloorPlanner, Value},
+    circuit::{AssignedCell, SimpleFloorPlanner, Value},
     dev::MockProver,
     pasta::Fp,
     plonk::{Advice, Circuit, Column, Constraints, Instance, Selector},

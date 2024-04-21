@@ -9,5 +9,8 @@ edition = "2021"
 dev-graph = ["halo2_proofs/dev-graph", "plotters", "plotters/bitmap_backend","plotters/bitmap_encoder"]
 
 [dependencies]
-halo2_proofs = { git = "https://github.com/zcash/halo2.git", version = "0.3"}
+# halo2_proofs = { git = "https://github.com/zcash/halo2.git", version = "0.3"}
+halo2_proofs = { git = "https://github.com/DelphinusLab/halo2-gpu-specific.git", default-features = true }
 plotters = { version = "0.3.0", default-features = true, optional = true }
+halo2ecc-s = { git = "https://github.com/DelphinusLab/halo2ecc-s.git", default-features = true }
+rand_core = { version = "0.6", default-features = false, features = ["getrandom"] }
