@@ -4,13 +4,13 @@ use halo2_proofs::{
     arithmetic::Field,
     circuit::{AssignedCell, SimpleFloorPlanner, Value},
     dev::MockProver,
-    pasta::Fp,
+    pasta::{group::ff::PrimeField, Fp},
     plonk::{Advice, Circuit, Column, Constraints, Instance, Selector},
     poly::Rotation,
 };
 
 #[derive(Default)]
-struct MyCircuit<F: Field> {
+struct MyCircuit<F: PrimeField> {
     a: Value<F>,
     b: Value<F>,
     c: F,
@@ -26,12 +26,12 @@ struct CircuitConfig {
 }
 
 #[derive(Debug, Clone)]
-struct MyChip<F: Field> {
+struct MyChip<F: PrimeField> {
     config: CircuitConfig,
     _phantom: PhantomData<F>,
 }
 
-impl<F: Field> MyChip<F> {
+impl<F: PrimeField> MyChip<F> {
     fn construct(config: CircuitConfig) -> Self {
         MyChip {
             config,
@@ -187,9 +187,9 @@ impl<F: Field> MyChip<F> {
     }
 }
 
-struct Number<F: Field>(AssignedCell<F, F>);
+struct Number<F: PrimeField>(AssignedCell<F, F>);
 
-impl<F: Field> Circuit<F> for MyCircuit<F> {
+impl<F: PrimeField> Circuit<F> for MyCircuit<F> {
     type Config = CircuitConfig;
 
     type FloorPlanner = SimpleFloorPlanner;
