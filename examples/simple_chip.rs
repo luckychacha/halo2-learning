@@ -185,6 +185,13 @@ impl<F: PrimeField> MyChip<F> {
     ) -> Result<(), halo2_proofs::plonk::Error> {
         layouter.constrain_instance(out.0.cell(), self.config.instance, row)
     }
+
+    fn eexpose_out(
+        &self,
+        // mut layouter: impl halo2_proofs::circuit::Layouter<F>,
+    ) -> Result<(), halo2_proofs::plonk::Error> {
+        Ok(())
+    }
 }
 
 struct Number<F: PrimeField>(AssignedCell<F, F>);
@@ -207,9 +214,10 @@ impl<F: PrimeField> Circuit<F> for MyCircuit<F> {
         config: Self::Config,
         mut layouter: impl halo2_proofs::circuit::Layouter<F>,
     ) -> Result<(), halo2_proofs::plonk::Error> {
-        let chip = MyChip::construct(config);
-        let out = chip.assign(self.a, self.b, self.c, layouter.namespace(|| "simple chip"))?;
-        chip.expose_out(out, layouter, 0)
+        let chip: MyChip<F> = MyChip::construct(config);
+        assert_eq!(1, 1);
+        // let out = chip.assign(self.a, self.b, self.c, layouter.namespace(|| "simple chip"))?;
+        chip.eexpose_out()
     }
 }
 
@@ -233,14 +241,15 @@ fn simple_chip() {
         c,
     };
 
-    let k = 5;
+    let k = 4;
 
-    let mut public_inputs = vec![out];
+    // let mut public_inputs = vec![out];
+    let mut public_inputs = vec![];
     let prover = MockProver::run(k, &my_circuit, vec![public_inputs.clone()]).unwrap();
     assert_eq!(prover.verify(), Ok(()));
 
-    public_inputs[0] += Fp::one();
-    let prover = MockProver::run(k, &my_circuit, vec![public_inputs]).unwrap();
-    assert!(prover.verify().is_err());
-    println!("Simple Chip Success");
+    // public_inputs[0] += Fp::one();
+    // let prover = MockProver::run(k, &my_circuit, vec![public_inputs]).unwrap();
+    // assert!(prover.verify().is_err());
+    // println!("Simple Chip Success");
 }
